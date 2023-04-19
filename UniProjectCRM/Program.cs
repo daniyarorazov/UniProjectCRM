@@ -2,7 +2,7 @@
 using System;
 
 using System.IO;
-
+using System.Linq;
 
 namespace UniProjectCRM
 {
@@ -39,7 +39,8 @@ namespace UniProjectCRM
             sw.Close();
         }
         public void ShowAllClients()
-        {// Get the lines of the CSV file
+        {
+            // Get the lines of the CSV file
             string[] lines = File.ReadAllLines("./clients.csv");
 
             // Create the header line
@@ -116,6 +117,27 @@ namespace UniProjectCRM
             File.WriteAllLines("./clients.csv", lines);
             Console.WriteLine("Data updated successfully.");
         }
+        public void DeleteClient()
+        {
+            ShowAllClients();
+            string[] lines = File.ReadAllLines("./clients.csv");
+            Console.Write("Enter the ID of the client you want to delete: ");
+            int id = int.Parse(Console.ReadLine());
+
+            // Remove the selected row from the list of rows
+            lines = lines.Where((line, index) => index != id - 1).ToArray();
+
+            // Write the updated list of rows back to the CSV file
+            using (var writer = new StreamWriter("clients.csv"))
+            {
+                foreach (var row in lines)
+                {
+                    writer.WriteLine(row);
+                }
+            }
+
+            Console.WriteLine("Client with ID {0} has been deleted.", id);
+        }
     }
 
     internal class Program
@@ -131,10 +153,11 @@ namespace UniProjectCRM
                 "1. Add new client \n " +
                 "2. Show all clients \n " +
                 "3. Edit data of client \n " +
-                "4. Exit ");
+                "4. Delete client \n " +
+                "5. Exit ");
                 string option = Console.ReadLine();
                 int num = Convert.ToInt32(option);
-                if (num == 4)
+                if (num == 5)
                 {
                     break;
                 }
@@ -158,14 +181,16 @@ namespace UniProjectCRM
                         Console.Clear();
                         break;
                     case 4:
+                        menuActions.DeleteClient();
+                        Console.WriteLine("Enter any value for continue ->");
+                        Console.ReadLine();
+                        Console.Clear();
                         break;
                     default:
                         Console.WriteLine("Invalid number.");
                         break;
                 }
             }
-
-
         }
     }
 }
