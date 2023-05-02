@@ -1,9 +1,8 @@
-﻿
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
+using System.Reflection;
 
 namespace UniProjectCRM
 {
@@ -171,22 +170,25 @@ namespace UniProjectCRM
 
             ShowAllClients();
             string[] lines = File.ReadAllLines("./clients.csv");
-            Console.Write("Choose the number of the client to edit: ");
+            Console.Write("Choose the number of the client to edit (if you want back to menu, enter 0): ");
             string indexNum = Console.ReadLine();
             decimal num;
 
-            while (!decimal.TryParse(indexNum, out num))
+            while (!decimal.TryParse(indexNum, out num) || num < 1 || num > lines.Length)
             {
-                Console.WriteLine("Invalid input. Please enter a valid number");
+                if (num == 0)
+                {
+                    return;
+                }
+                Console.WriteLine("Invalid input. Please enter a valid client number between 1 and {0}", lines.Length);
                 indexNum = Console.ReadLine();
             }
 
             int index = int.Parse(indexNum) - 1;
-            if (index < 0 || index >= lines.Length)
-            {
-                Console.WriteLine("Invalid client number.");
-                return;
-            }
+
+            
+
+
 
             // Update the chosen client's data
             string[] chosenFields = lines[index].Split(',');
@@ -228,11 +230,52 @@ namespace UniProjectCRM
             while (state)
             {
                 ShowAllClients();
-                Console.Write("Enter the ID of the client you want to delete: ");
-                int id = int.Parse(Console.ReadLine());
+                Console.Write("Enter the ID of the client you want to delete (If you want back to menu, enter 0): ");
+                string indexNum = Console.ReadLine();
+                if (indexNum == "0")
+                {
+                    return;
+                }
+                decimal num;
+
+                while (!decimal.TryParse(indexNum, out num))
+                {
+                    if (num == 0)
+                    {
+                        return;
+                    }
+                    Console.WriteLine("Invalid input. Please enter a valid number");
+                    indexNum = Console.ReadLine();
+                }
+
+                int id = int.Parse(indexNum) - 1;
+
+                int maxId = lines.Length - 1;
+
+                while (id < 0 || id > maxId)
+                {
+                    
+                    Console.WriteLine($"Please enter a number from 1 to {maxId + 1}");
+                    indexNum = Console.ReadLine();
+                    if (indexNum == "0")
+                    {
+                        return;
+                    }
+                    while (!decimal.TryParse(indexNum, out num))
+                    {
+                        Console.WriteLine("Invalid input. Please enter a valid number");
+                        indexNum = Console.ReadLine();
+                        if (indexNum == "0")
+                        {
+                            return;
+                        }
+                    }
+                    id = int.Parse(indexNum) - 1;
+                }
+
 
                 // Remove the selected row from the list of rows
-                lines = lines.Where((line, index) => index != id - 1).ToArray();
+                lines = lines.Where((line, index) => index != id).ToArray();
 
                 // Write the updated list of rows back to the CSV file
                 using (var writer = new StreamWriter("clients.csv"))
@@ -243,7 +286,7 @@ namespace UniProjectCRM
                     }
                 }
 
-                Console.WriteLine("Client with ID {0} has been deleted.", id);
+                Console.WriteLine("Client with ID {0} has been deleted.", id+1);
 
                 Console.WriteLine("Do you want to delete another user? \n 1. Yes \n 2. No");
                 string answerForAddingAnother = Console.ReadLine();
