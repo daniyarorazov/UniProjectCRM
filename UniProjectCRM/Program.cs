@@ -2,29 +2,30 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace UniProjectCRM
 {
 
+    // Class Menu with all actions
     class MenuActions
     {
+        // Validation. If entering value from user is null, "", so will display a message for the user to enter the non empty value
         public string IfIsNullValue(string value, string nameField)
         {
             while (string.IsNullOrEmpty(value))
             {
                 Console.WriteLine("Invalid input. Please enter a non-empty [{0}]:", nameField);
                 value = Console.ReadLine();
-                
-
             }
             return value;
         }
 
+        // Validation for date format
         public string DateValidation(string value)
         {
             DateTime date;
 
+            // Checking if entering date format is dd.MM.yyyy and the date is no larger than today's date
             while (!DateTime.TryParseExact(value, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out date) || date > DateTime.Today)
             {
                 if (date > DateTime.Today)
@@ -40,6 +41,8 @@ namespace UniProjectCRM
             }
             return value;
         }
+
+        // Adding new client
         public void AddClient()
         {
             StreamWriter sw = new StreamWriter("./clients.csv", true);
@@ -49,22 +52,27 @@ namespace UniProjectCRM
                 Console.WriteLine("Name of client");
                 string name = Console.ReadLine();
                 name = IfIsNullValue(name, "Name of client");
+                Console.WriteLine();
 
                 Console.WriteLine("Surname of client");
                 string surname = Console.ReadLine();
                 surname = IfIsNullValue(surname, "Surname of client");
+                Console.WriteLine();
 
-                Console.WriteLine("Date of Birth client (example: 24.02.2022)");
+                Console.WriteLine("Date of Birth client (example: 21.02.2004)");
                 string dateBirth = Console.ReadLine();
                 dateBirth = IfIsNullValue(dateBirth, "Date of Birth client (example: 24.02.2022)");
                 dateBirth = DateValidation(dateBirth);
+                Console.WriteLine();
 
                 Console.WriteLine("Sum of all purchases ($)");
                 string SumAllPurchases = Console.ReadLine();
                 SumAllPurchases = IfIsNullValue(SumAllPurchases, "Sum of all purchases ($)");
+                Console.WriteLine();
 
                 decimal sum;
 
+                // Validation for entering only numeric values
                 while (!decimal.TryParse(SumAllPurchases, out sum))
                 {
                     Console.WriteLine("Invalid input. Please enter a valid number for the sum of all purchases:");
@@ -116,29 +124,22 @@ namespace UniProjectCRM
             }
             sw.Close();
         }
+
+        // Show all clients data
         public void ShowAllClients()
         {
-            // Get the lines of the CSV file
             string[] lines = File.ReadAllLines("./clients.csv");
 
-            // Create the header line
+            // Creating data table structure
             string header = "║" + " Name".PadRight(22) + "║" + " Surname".PadRight(21) + "║" + " Date of birth".PadRight(16) + "║" + " Sum of payments".PadRight(19) + "║" + " Last interaction".PadRight(25) + "║";
-
-            // Calculate the length of the header line
-            int headerLength = header.Length; // Add 2 for the padding on the sides
-
-            // Create the horizontal line
+            int headerLength = header.Length; 
             string horizontalLine = "╠" + "═".PadRight(headerLength - 2, '═') + "╣";
-
-            // Create the footer line
             string footer = "╚" + "═".PadRight(headerLength - 2, '═') + "╝";
-
-            // Print the header line
             Console.WriteLine("╔" + "═".PadRight(headerLength - 2, '═') + "╗");
             Console.WriteLine(header);
             Console.WriteLine(horizontalLine);
 
-            // Print the data lines
+            // Paddings inside table columns
             for (int i = 0; i < lines.Length; i++)
             {
                 string[] data = lines[i].Split(',');
@@ -148,34 +149,32 @@ namespace UniProjectCRM
                 string sumOfPayments = " " + data[3].Trim().PadRight(18);
                 string lastInteraction = " " + data[4].Trim().PadRight(24);
 
-                // Create the data line
                 string dataLine = "║" + (i+1) + name + "║" + surname + "║" + dateOfBirth + "║" + sumOfPayments + "║" + lastInteraction + "║";
 
-                // Print the data line
                 Console.WriteLine(dataLine);
 
-                // Print the horizontal line if this is not the last line
                 if (i < lines.Length - 1)
                 {
                     Console.WriteLine(horizontalLine);
                 }
             }
 
-            // Print the footer line
             Console.WriteLine(footer);
-           
         }
+
+        // Edit data clients
         public void EditDataClient()
         {
-
             ShowAllClients();
             string[] lines = File.ReadAllLines("./clients.csv");
             Console.Write("Choose the number of the client to edit (if you want back to menu, enter 0): ");
             string indexNum = Console.ReadLine();
             decimal num;
 
+            // Validation for entering only numeric values
             while (!decimal.TryParse(indexNum, out num) || num < 1 || num > lines.Length)
             {
+                // If user enter 0, program back to menu
                 if (num == 0)
                 {
                     return;
@@ -185,9 +184,6 @@ namespace UniProjectCRM
             }
 
             int index = int.Parse(indexNum) - 1;
-
-            
-
 
 
             // Update the chosen client's data
@@ -202,6 +198,7 @@ namespace UniProjectCRM
             newPayments = IfIsNullValue(newPayments, "Date of birth");
             decimal sum;
 
+            // Validation for entering only numeric values
             while (!decimal.TryParse(newPayments, out sum))
             {
                 Console.WriteLine("Invalid input. Please enter a valid number for the sum of all purchases:");
@@ -222,6 +219,8 @@ namespace UniProjectCRM
             File.WriteAllLines("./clients.csv", lines);
             Console.WriteLine("Data updated successfully.");
         }
+
+        // Delete client
         public void DeleteClient()
         {
             string[] lines = File.ReadAllLines("./clients.csv");
@@ -238,6 +237,7 @@ namespace UniProjectCRM
                 }
                 decimal num;
 
+                // Validation for entering only numeric values
                 while (!decimal.TryParse(indexNum, out num))
                 {
                     if (num == 0)
@@ -261,6 +261,8 @@ namespace UniProjectCRM
                     {
                         return;
                     }
+
+                    // Validation for entering only numeric values
                     while (!decimal.TryParse(indexNum, out num))
                     {
                         Console.WriteLine("Invalid input. Please enter a valid number");
@@ -288,6 +290,7 @@ namespace UniProjectCRM
 
                 Console.WriteLine("Client with ID {0} has been deleted.", id+1);
 
+                // Condition for adding another user
                 Console.WriteLine("Do you want to delete another user? \n 1. Yes \n 2. No");
                 string answerForAddingAnother = Console.ReadLine();
                 if (answerForAddingAnother == "2")
@@ -323,6 +326,62 @@ namespace UniProjectCRM
                 }
             }
         }
+
+        // Show Statistic
+        public void ShowStats()
+        {
+            string[] lines = File.ReadAllLines("./clients.csv");
+
+            // Sum of all transactions
+            decimal totalTransactionSum = 0;
+            foreach (string line in lines)
+            {
+                string[] data = line.Split(',');
+                if (data.Length >= 4 && decimal.TryParse(data[3].Replace("$", ""), out decimal transactionSum))
+                {
+                    totalTransactionSum += transactionSum;
+                }
+            }
+            Console.WriteLine($"Sum of all transactions: {totalTransactionSum}$");
+
+            // Date of last transaction and name of client
+            DateTime lastTransactionDate = DateTime.MinValue;
+            string lastTransactionClientName = "";
+            foreach (string line in lines)
+            {
+                string[] data = line.Split(',');
+                if (data.Length >= 5 && DateTime.TryParse(data[4], out DateTime interactionDate))
+                {
+                    if (interactionDate > lastTransactionDate)
+                    {
+                        lastTransactionDate = interactionDate;
+                        lastTransactionClientName = $"{data[0]} {data[1]}";
+                    }
+                }
+            }
+            Console.WriteLine($"Last transaction was made by {lastTransactionClientName} on {lastTransactionDate}");
+
+            // Bigger sum of transaction
+            decimal maxTransactionSum = decimal.MinValue;
+            string maxTransactionClientName = "";
+            foreach (string line in lines)
+            {
+                string[] data = line.Split(',');
+                if (data.Length >= 4 && decimal.TryParse(data[3].Replace("$", ""), out decimal transactionSum))
+                {
+                    if (transactionSum > maxTransactionSum)
+                    {
+                        maxTransactionSum = transactionSum;
+                        maxTransactionClientName = $"{data[0]} {data[1]}";
+                    }
+                }
+            }
+            Console.WriteLine($"Client with the biggest transaction sum is {maxTransactionClientName} with sum of {maxTransactionSum}$");
+
+            Console.WriteLine();
+            Console.WriteLine("For back to menu, click Enter");
+            Console.ReadLine();
+        }
     }
 
     internal class Program
@@ -339,10 +398,12 @@ namespace UniProjectCRM
                 "2. Show all clients \n " +
                 "3. Edit data of client \n " +
                 "4. Delete client \n " +
-                "5. Exit ");
+                "5. Show statistics \n " +
+                "6. Exit ");
                 string option = Console.ReadLine();
                 int num;
 
+                // Validation for numbers between 1 and 5
                 if (!int.TryParse(option, out num) || num > 5)
                 {
                     Console.Clear();
@@ -350,7 +411,7 @@ namespace UniProjectCRM
                     continue;
                     
                 }
-                if (num == 5)
+                if (num == 6)
                 {
                     break;
                 }
@@ -378,6 +439,11 @@ namespace UniProjectCRM
                     case 4:
                         Console.Clear();
                         menuActions.DeleteClient();
+                        Console.Clear();
+                        break;
+                    case 5:
+                        Console.Clear();
+                        menuActions.ShowStats();
                         Console.Clear();
                         break;
                     default:
